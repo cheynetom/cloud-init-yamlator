@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud-Init Config Generator</title>
+    <style>
+        :root {
+            --color-primary: #2180a0;
+            --color-primary-hover: #1c74a0;
+            --color-bg: #f5f5f5;
+            --color-surface: #ffffff;
+            --color-border: #ddd;
+            --color-text: #333;
+            --color-text-secondary: #666;
+            --color-error: #c01530;
+            --color-success: #2a8f4d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--color-primary);
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background: var(--color-surface);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-section h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        label .description {
+            font-weight: normal;
+            color: var(--color-text-secondary);
+            font-size: 12px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            grid-column: 1 / -1;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: var(--color-text);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .output-section {
+            grid-column: 1 / -1;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .copy-btn.copied {
+            background: var(--color-success);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .list-input {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .list-input input {
+            flex: 1;
+        }
+
+        .list-btn {
+            padding: 10px 12px;
+            background: #f0f0f0;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .list-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .list-items {
+            margin-top: 10px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f9f9f9;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .list-item button {
+            padding: 4px 8px;
+            background: #ffebee;
+            color: var(--color-error);
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .list-item button:hover {
+            background: #ffcdd2;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            border-left: 4px solid var(--color-primary);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            background: var(--color-success);
+            color: white;
+            flex: 1;
+        }
+
+        .download-btn:hover {
+            background: #2a7a42;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☁️ Cloud-Init Configuration Generator</h1>
+        
+        <div class="grid">
+            <!-- Form Sections -->
+            <div class="form-section">
+                <h2>System Configuration</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Hostname
+                        <span class="description">Set system hostname</span>
+                    </label>
+                    <input type="text" id="hostname" placeholder="my-server">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Timezone
+                        <span class="description">System timezone (e.g., UTC, America/New_York)</span>
+                    </label>
+                    <input type="text" id="timezone" value="UTC" placeholder="UTC">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Locale
+                        <span class="description">System locale (e.g., en_US.UTF-8)</span>
+                    </label>
+                    <input type="text" id="locale" value="en_US.UTF-8" placeholder="en_US.UTF-8">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="upgradePackages">
+                        <span>Upgrade all packages on first boot</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="disableRoot">
+                        <span>Disable root SSH login</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Packages Section -->
+            <div class="form-section">
+                <h2>Packages</h2>
+                
+                <div class="info-box">
+                    Add packages to install during boot. Each on a new line or use the input below.
+                </div>
+
+                <div class="form-group">
+                    <label>Package Name</label>
+                    <div class="list-input">
+                        <input type="text" id="packageInput" placeholder="e.g., git, curl, nginx">
+                        <button class="list-btn" onclick="addPackage()">Add</button>
+                    </div>
+                    <div class="list-items" id="packagesList"></div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div class="form-section">
+                <h2>Users & Groups</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Add Default User
+                        <span class="description">Include default system user (ubuntu, ec2-user, etc.)</span>
+                    </label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="addDefaultUser" checked>
+                        <span>Yes</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        New Username
+                        <span class="description">Create additional user account</span>
+                    </label>
+                    <input type="text" id="newUsername" placeholder="ubuntu">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        User Home Directory
+                        <span class="description">Leave empty for default (/home/username)</span>
+                    </label>
+                    <input type="text" id="userHome" placeholder="/home/ubuntu">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        User Shell
+                        <span class="description">Login shell</span>
+                    </label>
+                    <select id="userShell">
+                        <option value="/bin/bash">/bin/bash</option>
+                        <option value="/bin/sh">/bin/sh</option>
+                        <option value="/bin/zsh">/bin/zsh</option>
+                        <option value="/sbin/nologin">/sbin/nologin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="userSudo">
+                        <span>Grant sudo access (NOPASSWD)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- SSH Keys Section -->
+            <div class="form-section">
+                <h2>SSH Configuration</h2>
+                
+                <div class="info-box">
+                    Add SSH authorized public keys (one per line).
+                </div>
+
+                <div class="form-group">
+                    <label>SSH Public Key</label>
+                    <div class="list-input">
+                        <input type="text" id="sshKeyInput" placeholder="ssh-rsa AAAA...">
+                        <button class="list-btn" onclick="addSSHKey()">Add</button>
+                    </div>
+                    <div class="list-items" id="sshKeysList"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="passwordAuth">
+                        <span>Enable password authentication</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        NTP Client
+                        <span class="description">Network time sync (chrony, ntpd, auto)</span>
+                    </label>
+                    <select id="ntpClient">
+                        <option value="auto">auto</option>
+                        <option value="chrony">chrony</option>
+                        <option value="ntpd">ntpd</option>
+                        <option value="ntp">ntp</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Commands Section -->
+            <div class="form-section">
+                <h2>Boot Commands</h2>
+                
+                <div class="info-box">
+                    Commands to run on boot (runcmd - runs only on first boot).
+                </div>
+
+                <div class="form-group">
+                    <label>Command to Run</label>
+                    <div class="list-input">
+                        <input type="text" id="commandInput" placeholder="apt-get update">
+                        <button class="list-btn" onclick="addCommand()">Add</button>
+                    </div>
+                    <div class="list-items" id="commandsList"></div>
+                </div>
+            </div>
+
+            <!-- Write Files Section -->
+            <div class="form-section">
+                <h2>File Management</h2>
+                
+                <div class="form-group">
+                    <label>
+                        File Path
+                        <span class="description">/etc/myconfig.conf</span>
+                    </label>
+                    <input type="text" id="filePath" placeholder="/etc/myconfig.conf">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        File Content
+                        <span class="description">Content for the file</span>
+                    </label>
+                    <textarea id="fileContent" placeholder="File content here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        File Permissions
+                        <span class="description">Octal format (e.g., 0755)</span>
+                    </label>
+                    <input type="text" id="filePerms" value="0644" placeholder="0644">
+                </div>
+
+                <button class="list-btn" onclick="addFile()" style="width: 100%;">Add File</button>
+                <div class="list-items" id="filesList" style="margin-top: 10px;"></div>
+            </div>
+
+            <!-- Environment Section -->
+            <div class="form-section">
+                <h2>Advanced Options</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Final Message
+                        <span class="description">Message to display at end of boot</span>
+                    </label>
+                    <textarea id="finalMessage" placeholder="Cloud-init has finished..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="preserveHostname">
+                        <span>Preserve hostname (don't modify)</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Merge Strategy
+                        <span class="description">How to merge multiple cloud-init configs</span>
+                    </label>
+                    <select id="mergeStrategy">
+                        <option value="">None</option>
+                        <option value="list()+dict()+str()">Default (lists append, dicts merge, strings append)</option>
+                        <option value="list()+dict(recurse_list)+str()">Dict with list recursion</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="form-section output-section">
+                <h2>Generated Configuration</h2>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('yaml')">YAML</button>
+                    <button class="tab-btn" onclick="switchTab('json')">JSON</button>
+                </div>
+
+                <div id="yaml" class="tab-content active">
+                    <div class="code-block" id="yamlOutput">
+                        <button class="copy-btn" onclick="copyToClipboard('yaml')">Copy</button>
+                        <pre id="yamlCode">#cloud-config
+# Your configuration will appear here</pre>
+                    </div>
+                </div>
+
+                <div id="json" class="tab-content">
+                    <div class="code-block" id="jsonOutput">
+                        <button class="copy-btn" onclick="copyToClipboard('json')">Copy</button>
+                        <pre id="jsonCode">// Your configuration will appear here</pre>
+                    </div>
+                </div>
+
+                <div class="button-group" style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="generateConfig()">🔄 Generate Configuration</button>
+                    <button class="download-btn" onclick="downloadConfig()">⬇️ Download YAML</button>
+                    <button class="btn-secondary" onclick="resetForm()">🔄 Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let config = {
+            packages: [],
+            sshKeys: [],
+            commands: [],
+            files: []
+        };
+
+        // Add package
+        function addPackage() {
+            const input = document.getElementById('packageInput');
+            const value = input.value.trim();
+            if (value) {
+                config.packages.push(value);
+                input.value = '';
+                renderList('packagesList', config.packages, 'removePackage');
+                generateConfig();
+            }
+        }
+
+        function removePackage(index) {
+            config.packages.splice(index, 1);
+            renderList('packagesList', config.packages, 'removePackage');
+            generateConfig();
+        }
+
+        // Add SSH Key
+        function addSSHKey() {
+            const input = document.getElementById('sshKeyInput');
+            const value = input.value.trim();
+            if (value) {
+                config.sshKeys.push(value);
+                input.value = '';
+                renderList('sshKeysList', config.sshKeys, 'removeSSHKey');
+                generateConfig();
+            }
+        }
+
+        function removeSSHKey(index) {
+            config.sshKeys.splice(index, 1);
+            renderList('sshKeysList', config.sshKeys, 'removeSSHKey');
+            generateConfig();
+        }
+
+        // Add Command
+        function addCommand() {
+            const input = document.getElementById('commandInput');
+            const value = input.value.trim();
+            if (value) {
+                config.commands.push(value);
+                input.value = '';
+                renderList('commandsList', config.commands, 'removeCommand');
+                generateConfig();
+            }
+        }
+
+        function removeCommand(index) {
+            config.commands.splice(index, 1);
+            renderList('commandsList', config.commands, 'removeCommand');
+            generateConfig();
+        }
+
+        // Add File
+        function addFile() {
+            const path = document.getElementById('filePath').value.trim();
+            const content = document.getElementById('fileContent').value.trim();
+            const perms = document.getElementById('filePerms').value.trim();
+
+            if (path && content) {
+                config.files.push({ path, content, perms: perms || '0644' });
+                document.getElementById('filePath').value = '';
+                document.getElementById('fileContent').value = '';
+                document.getElementById('filePerms').value = '0644';
+                renderFiles();
+                generateConfig();
+            }
+        }
+
+        function removeFile(index) {
+            config.files.splice(index, 1);
+            renderFiles();
+            generateConfig();
+        }
+
+        // Render list items
+        function renderList(elementId, items, removeFunc) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = items.map((item, i) => `
+                <div class="list-item">
+                    <span>${item}</span>
+                    <button onclick="${removeFunc}(${i})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function renderFiles() {
+            const container = document.getElementById('filesList');
+            container.innerHTML = config.files.map((file, i) => `
+                <div class="list-item">
+                    <span><strong>${file.path}</strong> (${file.perms})</span>
+                    <button onclick="removeFile(${i})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Generate Configuration
+        function generateConfig() {
+            const yaml = buildYAML();
+            const json = buildJSON();
+            
+            document.getElementById('yamlCode').textContent = yaml;
+            document.getElementById('jsonCode').textContent = JSON.stringify(JSON.parse(yaml.replace(/#cloud-config/, '').trim() || '{}'), null, 2);
+        }
+
+        function buildYAML() {
+            let yaml = '#cloud-config\n';
+            
+            const hostname = document.getElementById('hostname').value.trim();
+            if (hostname) yaml += `hostname: ${hostname}\n`;
+            
+            const timezone = document.getElementById('timezone').value.trim() || 'UTC';
+            yaml += `timezone: ${timezone}\n`;
+            
+            const locale = document.getElementById('locale').value.trim() || 'en_US.UTF-8';
+            yaml += `locale: ${locale}\n`;
+            
+            if (document.getElementById('upgradePackages').checked) {
+                yaml += 'package_upgrade: true\n';
+            }
+            
+            if (document.getElementById('disableRoot').checked) {
+                yaml += 'disable_root: true\n';
+            }
+
+            if (document.getElementById('preserveHostname').checked) {
+                yaml += 'preserve_hostname: true\n';
+            }
+
+            // Packages
+            if (config.packages.length > 0) {
+                yaml += 'packages:\n';
+                config.packages.forEach(pkg => {
+                    yaml += `  - ${pkg}\n`;
+                });
+            }
+
+            // Users
+            yaml += 'users:\n';
+            if (document.getElementById('addDefaultUser').checked) {
+                yaml += '  - default\n';
+            }
+            
+            const newUser = document.getElementById('newUsername').value.trim();
+            if (newUser) {
+                yaml += `  - name: ${newUser}\n`;
+                const home = document.getElementById('userHome').value.trim();
+                if (home) yaml += `    home: ${home}\n`;
+                yaml += `    shell: ${document.getElementById('userShell').value}\n`;
+                if (document.getElementById('userSudo').checked) {
+                    yaml += '    sudo: ["ALL=(ALL) NOPASSWD:ALL"]\n';
+                }
+            }
+
+            // SSH
+            if (config.sshKeys.length > 0) {
+                yaml += 'ssh_authorized_keys:\n';
+                config.sshKeys.forEach(key => {
+                    yaml += `  - "${key}"\n`;
+                });
+            }
+
+            if (document.getElementById('passwordAuth').checked) {
+                yaml += 'ssh_pwauth: true\n';
+            } else {
+                yaml += 'ssh_pwauth: false\n';
+            }
+
+            const ntp = document.getElementById('ntpClient').value.trim();
+            if (ntp) yaml += `ntp_client: ${ntp}\n`;
+
+            // Files
+            if (config.files.length > 0) {
+                yaml += 'write_files:\n';
+                config.files.forEach(file => {
+                    yaml += `  - path: ${file.path}\n`;
+                    yaml += `    permissions: '${file.perms}'\n`;
+                    yaml += `    content: |\n`;
+                    file.content.split('\n').forEach(line => {
+                        yaml += `      ${line}\n`;
+                    });
+                });
+            }
+
+            // Commands
+            if (config.commands.length > 0) {
+                yaml += 'runcmd:\n';
+                config.commands.forEach(cmd => {
+                    yaml += `  - ${cmd}\n`;
+                });
+            }
+
+            const finalMsg = document.getElementById('finalMessage').value.trim();
+            if (finalMsg) {
+                yaml += `final_message: "${finalMsg}"\n`;
+            }
+
+            const mergeStrat = document.getElementById('mergeStrategy').value.trim();
+            if (mergeStrat) {
+                yaml += `merge_how: ${mergeStrat}\n`;
+            }
+
+            return yaml || '#cloud-config\n# No options configured\n';
+        }
+
+        function buildJSON() {
+            const yamlStr = buildYAML().replace(/#cloud-config/, '').trim() || '{}';
+            try {
+                return yamlStr;
+            } catch {
+                return '{}';
+            }
+        }
+
+        // UI Functions
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function copyToClipboard(tab) {
+            let text = '';
+            if (tab === 'yaml') {
+                text = document.getElementById('yamlCode').textContent;
+            } else {
+                text = document.getElementById('jsonCode').textContent;
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const original = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function downloadConfig() {
+            const yaml = document.getElementById('yamlCode').textContent;
+            const blob = new Blob([yaml], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cloud-init.yaml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function resetForm() {
+            if (confirm('Reset all fields? This cannot be undone.')) {
+                document.querySelectorAll('input[type="text"], input[type="number"], textarea, select').forEach(el => {
+                    if (el.id === 'timezone') el.value = 'UTC';
+                    else if (el.id === 'locale') el.value = 'en_US.UTF-8';
+                    else if (el.id === 'userShell') el.value = '/bin/bash';
+                    else if (el.id === 'ntpClient') el.value = 'auto';
+                    else if (el.id === 'filePerms') el.value = '0644';
+                    else el.value = '';
+                });
+                document.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
+                    el.checked = el.id === 'addDefaultUser';
+                });
+                config = { packages: [], sshKeys: [], commands: [], files: [] };
+                renderList('packagesList', [], 'removePackage');
+                renderList('sshKeysList', [], 'removeSSHKey');
+                renderList('commandsList', [], 'removeCommand');
+                renderFiles();
+                generateConfig();
+            }
+        }
+
+        // Initialize
+        generateConfig();
+    </script>
+</body>
+</html>
