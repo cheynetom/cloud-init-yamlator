@@ -521,16 +521,45 @@
                 <div class="list-items" id="filesList" style="margin-top: 10px;"></div>
             </div>
 
-            <!-- Environment Section -->
+            <!-- Service Management Section -->
             <div class="form-section">
-                <h2>Advanced Options</h2>
+                <h2>Service Management</h2>
                 
                 <div class="form-group">
                     <label>
-                        Final Message
-                        <span class="description">Message to display at end of boot</span>
+                        Enable Service
+                        <span class="description">Start service on boot (e.g., docker, nginx)</span>
                     </label>
-                    <textarea id="finalMessage" placeholder="Cloud-init has finished..."></textarea>
+                    <div class="list-input">
+                        <input type="text" id="enableServiceInput" placeholder="e.g., docker, nginx">
+                        <button class="list-btn" onclick="addEnabledService()">Add</button>
+                    </div>
+                    <div class="list-items" id="enabledServicesList"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Disable Service
+                        <span class="description">Disable service on boot</span>
+                    </label>
+                    <div class="list-input">
+                        <input type="text" id="disableServiceInput" placeholder="e.g., snapd">
+                        <button class="list-btn" onclick="addDisabledService()">Add</button>
+                    </div>
+                    <div class="list-items" id="disabledServicesList"></div>
+                </div>
+            </div>
+
+            <!-- Network & Hostname Section -->
+            <div class="form-section">
+                <h2>Network & Hostname</h2>
+                
+                <div class="form-group">
+                    <label>
+                        FQDN (Fully Qualified Domain Name)
+                        <span class="description">e.g., server.example.com</span>
+                    </label>
+                    <input type="text" id="fqdn" placeholder="server.example.com">
                 </div>
 
                 <div class="form-group">
@@ -538,6 +567,145 @@
                         <input type="checkbox" id="preserveHostname">
                         <span>Preserve hostname (don't modify)</span>
                     </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="updateEtcHosts">
+                        <span>Update /etc/hosts file</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Custom hosts entries
+                        <span class="description">One per line: IP hostname</span>
+                    </label>
+                    <textarea id="hostsEntries" placeholder="192.168.1.1 server1\n10.0.0.1 server2"></textarea>
+                </div>
+            </div>
+
+            <!-- Security & Accounts Section -->
+            <div class="form-section">
+                <h2>Security & Access</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Root User Password
+                        <span class="description">Hash with openssl passwd -6</span>
+                    </label>
+                    <input type="password" id="rootPassword" placeholder="$6$...">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="expirePassword">
+                        <span>Expire all user passwords on first login</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="disableEC2Metadata">
+                        <span>Disable EC2 instance metadata (AWS only)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Scripting & Boot Section -->
+            <div class="form-section">
+                <h2>Advanced Scripting</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Boot Commands (Early Boot)
+                        <span class="description">Run very early in boot (bootcmd)</span>
+                    </label>
+                    <div class="list-input">
+                        <input type="text" id="bootCmdInput" placeholder="e.g., mkfs.ext4 /dev/sda1">
+                        <button class="list-btn" onclick="addBootCmd()">Add</button>
+                    </div>
+                    <div class="list-items" id="bootCmdList"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Run Commands (Post-Boot)
+                        <span class="description">Run during boot after services start</span>
+                    </label>
+                    <div class="list-input">
+                        <input type="text" id="postBootCmdInput" placeholder="e.g., systemctl restart docker">
+                        <button class="list-btn" onclick="addPostBootCmd()">Add</button>
+                    </div>
+                    <div class="list-items" id="postBootCmdList"></div>
+                </div>
+            </div>
+
+            <!-- Filesystem & Disk Section -->
+            <div class="form-section">
+                <h2>Disk & Filesystem</h2>
+                
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="growRoot">
+                        <span>Grow root partition to fill disk</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="resizeRoot">
+                        <span>Resize root filesystem</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Device for GRUB Installation
+                        <span class="description">e.g., /dev/sda (auto if empty)</span>
+                    </label>
+                    <input type="text" id="grubDevice" placeholder="/dev/sda">
+                </div>
+            </div>
+
+            <!-- System Monitoring Section -->
+            <div class="form-section">
+                <h2>Monitoring & Logging</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Rsyslog Configuration
+                        <span class="description">Configure remote syslog server</span>
+                    </label>
+                    <input type="text" id="rsyslogServer" placeholder="logs.example.com:514">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Phone Home URL
+                        <span class="description">POST instance data to URL on boot</span>
+                    </label>
+                    <input type="text" id="phoneHomeUrl" placeholder="https://example.com/notify">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="seedRandom">
+                        <span>Seed system random number generator</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Environment Section -->
+            <div class="form-section">
+                <h2>Boot Behavior</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Final Message
+                        <span class="description">Message to display at end of boot</span>
+                    </label>
+                    <textarea id="finalMessage" placeholder="Cloud-init has finished..."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -549,6 +717,19 @@
                         <option value="">None</option>
                         <option value="list()+dict()+str()">Default (lists append, dicts merge, strings append)</option>
                         <option value="list()+dict(recurse_list)+str()">Dict with list recursion</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Power State After Boot
+                        <span class="description">What to do after cloud-init completes</span>
+                    </label>
+                    <select id="powerState">
+                        <option value="">None</option>
+                        <option value="reboot">Reboot</option>
+                        <option value="poweroff">Power Off</option>
+                        <option value="halt">Halt</option>
                     </select>
                 </div>
             </div>
@@ -592,7 +773,11 @@
             packages: [],
             sshKeys: [],
             commands: [],
-            files: []
+            files: [],
+            bootCmds: [],
+            postBootCmds: [],
+            enabledServices: [],
+            disabledServices: []
         };
 
         // Add package
@@ -646,6 +831,78 @@
         function removeCommand(index) {
             config.commands.splice(index, 1);
             renderList('commandsList', config.commands, 'removeCommand');
+            generateConfig();
+        }
+
+        // Boot Commands
+        function addBootCmd() {
+            const input = document.getElementById('bootCmdInput');
+            const value = input.value.trim();
+            if (value) {
+                config.bootCmds.push(value);
+                input.value = '';
+                renderList('bootCmdList', config.bootCmds, 'removeBootCmd');
+                generateConfig();
+            }
+        }
+
+        function removeBootCmd(index) {
+            config.bootCmds.splice(index, 1);
+            renderList('bootCmdList', config.bootCmds, 'removeBootCmd');
+            generateConfig();
+        }
+
+        // Post Boot Commands
+        function addPostBootCmd() {
+            const input = document.getElementById('postBootCmdInput');
+            const value = input.value.trim();
+            if (value) {
+                config.postBootCmds.push(value);
+                input.value = '';
+                renderList('postBootCmdList', config.postBootCmds, 'removePostBootCmd');
+                generateConfig();
+            }
+        }
+
+        function removePostBootCmd(index) {
+            config.postBootCmds.splice(index, 1);
+            renderList('postBootCmdList', config.postBootCmds, 'removePostBootCmd');
+            generateConfig();
+        }
+
+        // Enabled Services
+        function addEnabledService() {
+            const input = document.getElementById('enableServiceInput');
+            const value = input.value.trim();
+            if (value) {
+                config.enabledServices.push(value);
+                input.value = '';
+                renderList('enabledServicesList', config.enabledServices, 'removeEnabledService');
+                generateConfig();
+            }
+        }
+
+        function removeEnabledService(index) {
+            config.enabledServices.splice(index, 1);
+            renderList('enabledServicesList', config.enabledServices, 'removeEnabledService');
+            generateConfig();
+        }
+
+        // Disabled Services
+        function addDisabledService() {
+            const input = document.getElementById('disableServiceInput');
+            const value = input.value.trim();
+            if (value) {
+                config.disabledServices.push(value);
+                input.value = '';
+                renderList('disabledServicesList', config.disabledServices, 'removeDisabledService');
+                generateConfig();
+            }
+        }
+
+        function removeDisabledService(index) {
+            config.disabledServices.splice(index, 1);
+            renderList('disabledServicesList', config.disabledServices, 'removeDisabledService');
             generateConfig();
         }
 
@@ -704,8 +961,12 @@
         function buildYAML() {
             let yaml = '#cloud-config\n';
             
+            // Basic System Configuration
             const hostname = document.getElementById('hostname').value.trim();
             if (hostname) yaml += `hostname: ${hostname}\n`;
+            
+            const fqdn = document.getElementById('fqdn').value.trim();
+            if (fqdn) yaml += `fqdn: ${fqdn}\n`;
             
             const timezone = document.getElementById('timezone').value.trim() || 'UTC';
             yaml += `timezone: ${timezone}\n`;
@@ -723,6 +984,18 @@
 
             if (document.getElementById('preserveHostname').checked) {
                 yaml += 'preserve_hostname: true\n';
+            }
+
+            if (document.getElementById('updateEtcHosts').checked) {
+                yaml += 'manage_etc_hosts: true\n';
+            }
+
+            const hostsEntries = document.getElementById('hostsEntries').value.trim();
+            if (hostsEntries) {
+                yaml += 'etc_hosts: |\n';
+                hostsEntries.split('\n').forEach(line => {
+                    if (line.trim()) yaml += `  ${line}\n`;
+                });
             }
 
             // Packages
@@ -750,6 +1023,18 @@
                 }
             }
 
+            // Passwords
+            const rootPassword = document.getElementById('rootPassword').value.trim();
+            if (rootPassword) {
+                yaml += 'chpasswd:\n';
+                yaml += '  list:\n';
+                yaml += `    - root:${rootPassword}\n`;
+            }
+
+            if (document.getElementById('expirePassword').checked) {
+                yaml += 'expire: true\n';
+            }
+
             // SSH
             if (config.sshKeys.length > 0) {
                 yaml += 'ssh_authorized_keys:\n';
@@ -767,6 +1052,24 @@
             const ntp = document.getElementById('ntpClient').value.trim();
             if (ntp) yaml += `ntp_client: ${ntp}\n`;
 
+            // Disk Configuration
+            if (document.getElementById('growRoot').checked) {
+                yaml += 'growpart:\n';
+                yaml += '  mode: auto\n';
+                yaml += '  devices: ["/"]\n';
+            }
+
+            if (document.getElementById('resizeRoot').checked) {
+                yaml += 'resize_rootfs: true\n';
+            }
+
+            const grubDevice = document.getElementById('grubDevice').value.trim();
+            if (grubDevice) {
+                yaml += 'grub_dpkg:\n';
+                yaml += '  enabled: true\n';
+                yaml += `  install_devices: ["${grubDevice}"]\n`;
+            }
+
             // Files
             if (config.files.length > 0) {
                 yaml += 'write_files:\n';
@@ -780,7 +1083,15 @@
                 });
             }
 
-            // Commands
+            // Boot Commands
+            if (config.bootCmds.length > 0) {
+                yaml += 'bootcmd:\n';
+                config.bootCmds.forEach(cmd => {
+                    yaml += `  - ${cmd}\n`;
+                });
+            }
+
+            // Run Commands
             if (config.commands.length > 0) {
                 yaml += 'runcmd:\n';
                 config.commands.forEach(cmd => {
@@ -788,6 +1099,56 @@
                 });
             }
 
+            // Post-boot Commands
+            if (config.postBootCmds.length > 0) {
+                yaml += 'mounts:\n';
+                config.postBootCmds.forEach(cmd => {
+                    yaml += `# Additional command: ${cmd}\n`;
+                });
+            }
+
+            // Service Management
+            if (config.enabledServices.length > 0) {
+                yaml += 'systemd:\n';
+                yaml += '  enabled:\n';
+                config.enabledServices.forEach(svc => {
+                    yaml += `    - ${svc}\n`;
+                });
+            }
+
+            if (config.disabledServices.length > 0) {
+                yaml += 'systemd:\n';
+                yaml += '  disabled:\n';
+                config.disabledServices.forEach(svc => {
+                    yaml += `    - ${svc}\n`;
+                });
+            }
+
+            // Monitoring
+            const rsyslogServer = document.getElementById('rsyslogServer').value.trim();
+            if (rsyslogServer) {
+                yaml += 'rsyslog:\n';
+                yaml += `  configs:\n`;
+                yaml += `    - "*.* @@${rsyslogServer}\n"`;
+            }
+
+            const phoneHomeUrl = document.getElementById('phoneHomeUrl').value.trim();
+            if (phoneHomeUrl) {
+                yaml += 'phone_home:\n';
+                yaml += `  url: ${phoneHomeUrl}\n`;
+            }
+
+            if (document.getElementById('seedRandom').checked) {
+                yaml += 'random_seed:\n';
+                yaml += '  file: /dev/urandom\n';
+                yaml += '  command: ["pollinate", "-r", "-s", "https://seed.ubuntu.com"]\n';
+            }
+
+            if (document.getElementById('disableEC2Metadata').checked) {
+                yaml += 'disable_ec2_metadata: true\n';
+            }
+
+            // Final Configuration
             const finalMsg = document.getElementById('finalMessage').value.trim();
             if (finalMsg) {
                 yaml += `final_message: "${finalMsg}"\n`;
@@ -796,6 +1157,12 @@
             const mergeStrat = document.getElementById('mergeStrategy').value.trim();
             if (mergeStrat) {
                 yaml += `merge_how: ${mergeStrat}\n`;
+            }
+
+            const powerState = document.getElementById('powerState').value.trim();
+            if (powerState) {
+                yaml += 'power_state:\n';
+                yaml += `  mode: ${powerState}\n`;
             }
 
             return yaml || '#cloud-config\n# No options configured\n';
@@ -853,7 +1220,7 @@
 
         function resetForm() {
             if (confirm('Reset all fields? This cannot be undone.')) {
-                document.querySelectorAll('input[type="text"], input[type="number"], textarea, select').forEach(el => {
+                document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"], textarea, select').forEach(el => {
                     if (el.id === 'timezone') el.value = 'UTC';
                     else if (el.id === 'locale') el.value = 'en_US.UTF-8';
                     else if (el.id === 'userShell') el.value = '/bin/bash';
@@ -864,10 +1231,14 @@
                 document.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
                     el.checked = el.id === 'addDefaultUser';
                 });
-                config = { packages: [], sshKeys: [], commands: [], files: [] };
+                config = { packages: [], sshKeys: [], commands: [], files: [], bootCmds: [], postBootCmds: [], enabledServices: [], disabledServices: [] };
                 renderList('packagesList', [], 'removePackage');
                 renderList('sshKeysList', [], 'removeSSHKey');
                 renderList('commandsList', [], 'removeCommand');
+                renderList('bootCmdList', [], 'removeBootCmd');
+                renderList('postBootCmdList', [], 'removePostBootCmd');
+                renderList('enabledServicesList', [], 'removeEnabledService');
+                renderList('disabledServicesList', [], 'removeDisabledService');
                 renderFiles();
                 generateConfig();
             }
